@@ -10,7 +10,7 @@ import sys
 import cv2
 from PyQt5.QtWidgets import (QMainWindow, QApplication,)
 from PyQt5.uic import loadUi
-from PyQt5.QtGui import QImage, QPixmap, QIcon
+from PyQt5.QtGui import QImage, QPixmap, QIcon, QPalette, QBrush
 from PyQt5.QtCore import QTimer, pyqtSlot
 from helpers.camvideostream import CamVideoStream
 from helpers import core, help
@@ -19,6 +19,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 iconImg = os.path.join(BASE_DIR, 'icon.png')
 errorImg = iconImg
+bgImg = os.path.join(BASE_DIR, 'main_window_bg.jpg')
 mainUiFile = os.path.join(BASE_DIR, 'mainWindow.ui')
 confFile = os.path.join(BASE_DIR, 'configurations.conf')
 VIDEO_SOURCE = 0
@@ -50,6 +51,10 @@ class MainWindow(QMainWindow):
         self.working = False
 
         self.dialogs = list()
+        
+        # Background image
+        spam = bgImg
+        self.setStyleSheet("background-image: url({});".format(spam) )
 
     def changeStatus(self, status):
         self.statusBox.setText(status)
@@ -120,7 +125,11 @@ class MainWindow(QMainWindow):
                 self.mainFrame.setPixmap(QPixmap.fromImage(frameI))
                 self.mainFrame.setScaledContents(True)
             else:
-                # on second window
+                # on second window TODO: Scaled the second image to fit te window perfectly
+                #frameI = frameI.setPixel(25,150)
+                #print(dir(frameI))
+                #print(dir(frameI.setPixel))
+                #print(frameI.size())
                 self.responseFrame.setPixmap(QPixmap.fromImage(frameI))
                 self.responseFrame.setScaledContents(True)
         except AttributeError:
@@ -173,8 +182,10 @@ class MainWindow(QMainWindow):
 def boot():
     app = QApplication([])
     main = MainWindow(None)
-    #window.setWindowTitle("Face Tracking and Attendance System")
+    main.setToolTip("Face Tracking and Attendance System")
+    #main.setStatusTip("Face System")
     main.setWindowIcon(QIcon(iconImg))
+    print(dir(main))
     main.show()
     sys.exit(app.exec_())
 

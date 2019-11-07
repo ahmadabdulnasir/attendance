@@ -40,8 +40,10 @@ class PredictionThread(Thread):
     def run(self):
         print('[INFO]: Starting Prediction Thread')
         while True:
-            result = face_track.preditFace(self.img)
+        #TODO: Make the actual prediction here
+            #result = face_track.preditFace(self.img)
             #{'userid':userid, 'x_min': x_min, 'x_max': x_max, 'y_min': y_min, 'y_max': y_max , 'confidence': msg}
+            result = None
             if result:
                 rows = []
                 tstp = str(dtime.now().strftime('%d-%b-%H-%Y-%M-%S%p'))
@@ -63,7 +65,8 @@ def locaPredict(img):
     print('[INFO]: Starting Prediction Thread')
     #import face_track
     # while True:
-    result = face_track.preditFace(img)
+    #result = face_track.preditFace(img)
+    result = None
     #{'userid':userid, 'x_min': x_min, 'x_max': x_max, 'y_min': y_min, 'y_max': y_max , 'confidence': msg}
     if result:
         rows = []
