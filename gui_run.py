@@ -11,7 +11,7 @@ import cv2
 from PyQt5.QtWidgets import (QMainWindow, QApplication,)
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import QImage, QPixmap, QIcon, QPalette, QBrush
-from PyQt5.QtCore import QTimer, pyqtSlot
+from PyQt5.QtCore import QTimer, pyqtSlot, QSize
 from helpers.camvideostream import CamVideoStream
 from helpers import core, help
 import os
@@ -25,7 +25,7 @@ confFile = os.path.join(BASE_DIR, 'configurations.conf')
 VIDEO_SOURCE = 0
 TRACKING_ACTIVE = 'Tracking activated ....'
 APP_READY = 'Ready'
-TRAINING_NOW = 'Training'
+TRAINING_NOW = 'Training ..'
 ''' ./constants declaration'''
 
 class MainWindow(QMainWindow):
@@ -51,10 +51,22 @@ class MainWindow(QMainWindow):
         self.working = False
 
         self.dialogs = list()
-        
+
+        # disable trainin TODO: Find a work around
+        self.trainButton.setEnabled(False)
+
         # Background image
         spam = bgImg
-        self.setStyleSheet("background-image: url({});".format(spam) )
+        # self.setStyleSheet("background-image: url({});".format(spam) )
+        self.mainFrame.setStyleSheet("background-image: url({});".format(spam) )
+        # self.trainButton.setStyleSheet("background-color: #b2beb5; color:#b2beb5;" )
+        # oImage = QImage(bgImg)
+        # sImage = oImage.scaled(QSize(self.width(),self.height()))
+        # palette = QPalette()
+        # palette.setBrush(10, QBrush(sImage))
+        # self.setPalette(palette)
+
+        self.quitButton.setStyleSheet("color:#ff0000;")
 
     def changeStatus(self, status):
         self.statusBox.setText(status)
@@ -96,7 +108,7 @@ class MainWindow(QMainWindow):
         """ Load feed with opencv from source (webcam) """
         ret, self.img = self.feed.read() #  reading feed frame by frame'
         img2 = core.draw_box(self.img)
-        self.img = cv2.resize(self.img, (250,300))
+        # self.img = cv2.resize(self.img, (250,300))
         self.displayFeed(self.img, 1)
         self.displayFeed(img2, 2)
 
@@ -130,6 +142,7 @@ class MainWindow(QMainWindow):
                 #print(dir(frameI))
                 #print(dir(frameI.setPixel))
                 #print(frameI.size())
+                # frameI = frameI.scaled(QSize(50,30))
                 self.responseFrame.setPixmap(QPixmap.fromImage(frameI))
                 self.responseFrame.setScaledContents(True)
         except AttributeError:
@@ -185,7 +198,7 @@ def boot():
     main.setToolTip("Face Tracking and Attendance System")
     #main.setStatusTip("Face System")
     main.setWindowIcon(QIcon(iconImg))
-    print(dir(main))
+    #print(dir(main))
     main.show()
     sys.exit(app.exec_())
 

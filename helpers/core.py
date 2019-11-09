@@ -12,20 +12,28 @@ import os
 from datetime import  datetime as dtime
 from threading import Thread
 from . import face_track
+import pickle
+import face_recognition
+import numpy as np
 '''constants declaration '''
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Setting database file to use
-faceCascade_file = os.path.join(BASE_DIR, "haarcascade_frontalface_default.xml")
+faceCascade_file = os.path.join(BASE_DIR, "haarcascade_profileface.xml")
 ''' ./constants declaration'''
 
-# haarcascade_frontalface_default
-# haarcascade_profileface
-# haarcascade_frontalcatface_extended
-# haarcascade_frontalface_default
-# haarcascade_upperbody
+# 'haarcascade_frontalface_default'
+# 'haarcascade_profileface'
+# 'haarcascade_frontalcatface_extended'
+# 'haarcascade_frontalface_default'
+# 'haarcascade_upperbody'
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(faceCascade_file)
-PEOPLE = ['010EEP', 'bata', 'diya', 'hassan', 'nd003', 'nd007', 'nd010', 'nur', 'umar_z', 'abatcha', 'buddy', 'eeeguy', 'HAUWA', 'nd004', 'nd008', 'nd011', 'salafi', 'yeima', 'abbah', 'calculus', 'Friend', 'kalli', 'nd005', 'nd009', 'nd012', 'shelden', 'bakura', 'chairmo', 'geidam', 'nd002', 'nd006', 'nd01', 'nd013', 'shittu']
+
+PEOPLE = ['Abdussamad', 'asmau', 'muhammad', 'salisu', 'timoti', 'abubakar', 'ishaq', 'sadiq', 'Sani', 'Usman',]
+# load the known faces and embeddings
+print("[INFO] loading faces encodings model...")
+data = pickle.loads(open("faces.model", "rb").read())
+print("[INFO] loading faces encodings model Done")
 # x = threading.Thread(target=thread_function, args=(1,), daemon=True)
 class PredictionThread(Thread):
 
@@ -62,16 +70,41 @@ class PredictionThread(Thread):
             self.run()
 
 def locaPredict(img):
-    print('[INFO]: Starting Prediction Thread')
-    #import face_track
-    # while True:
-    #result = face_track.preditFace(img)
-    result = None
+    # print('[INFO]: Starting Prediction Thread')
+    spam = face_recognition.load_image_file(img)
+    boxes = face_recognition.face_locations(spam, model='hog')
+    encodings = face_recognition.face_encodings(spam, boxes)
+    name = "Unknown"
+    for encoding in encodings:
+		# attempt to match each face in the input image to our known  encodings
+        matches = face_recognition.compare_faces(data["encodings"], encoding)
+        # name = "Unknown"
+        # check to see if we have found a match
+        if True in matches:
+			# find the indexes of all matched faces then initialize a
+			# dictionary to count the total number of times each face
+			# was matched
+            matchedIdxs = [i for (i, b) in enumerate(matches) if b]
+            counts = {}
+
+			# loop over the matched indexes and maintain a count for
+			# each recognized face face
+            for i in matchedIdxs:
+                name = data["names"][i]
+                counts[name] = counts.get(name, 0) + 1
+                # determine the recognized face with the largest number
+                # of votes (note: in the event of an unlikely tie Python
+                # will select first entry in the dictionary)
+            name = max(counts, key=counts.get)
+
+		# update the list of names
+		# names.append(name)
+    result = name
     #{'userid':userid, 'x_min': x_min, 'x_max': x_max, 'y_min': y_min, 'y_max': y_max , 'confidence': msg}
     if result:
         rows = []
         tstp = str(dtime.now().strftime('%d-%b-%H-%Y-%M-%S%p'))
-        username = result['userid']
+        username = result #['userid']
         present = 'Yes'
         date_ = str(dtime.now().strftime('%d_%b_%Y'))
         row = [tstp, username, present, date_]
@@ -101,9 +134,6 @@ def draw_box(frame):
     	minSize=(30, 30),
     	#flags = cv2.CV_HAAR_SCALE_IMAGE
         )
-
-    # print("Found {0} faces!".format(len(faces)))
-
     # Draw a rectangle around the faces
     exT = 30
     for (x, y, w, h) in faces:
