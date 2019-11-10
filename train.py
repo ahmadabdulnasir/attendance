@@ -19,7 +19,7 @@ d = os.listdir()
 people = {}
 for name in d:
     if os.path.isdir(name):
-        print(os.listdir(name))
+        #print(os.listdir(name))
         print('[INFO] Found directory: {}'.format(name))
         fs = os.listdir(name)
         people[name] = fs
