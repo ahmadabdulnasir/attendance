@@ -11,7 +11,7 @@ import cv2
 import os
 from datetime import  datetime as dtime
 from threading import Thread
-from . import face_track
+#from . import face_track
 import pickle
 import face_recognition
 import numpy as np
