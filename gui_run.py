@@ -16,7 +16,7 @@ from helpers.camvideostream import CamVideoStream
 from helpers import core, help
 import os
 '''constants declaration '''
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # Base directory were the current file is
 iconImg = os.path.join(BASE_DIR, 'icon.png')
 errorImg = iconImg
 bgImg = os.path.join(BASE_DIR, 'main_window_bg.jpg')
@@ -36,36 +36,17 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Face Tracking and Attendance System")
         self.startButton.setCheckable(True)
         self.startButton.clicked.connect(self.startSystem)
-        # self.trainButton.setEnabled(True)
         self.training_now = False
-        self.trainButton.setCheckable(True)
-        self.trainButton.clicked.connect(self.train)
         self.fullScreenButton.setCheckable(True)
         self.fullScreenButton.clicked.connect(self.screenFullNormal)
-        self.settingsButton.clicked.connect(self.settings)
         self.helpButton.clicked.connect(self.help)
         self.quitButton.clicked.connect(self.exitApp)
-
         self.statusBox.setText(APP_READY)
-
         self.working = False
-
-        self.dialogs = list()
-
-        # disable trainin TODO: Find a work around
-        self.trainButton.setEnabled(False)
-
-        # Background image
+        self.dialogs = list() # To be able raise another window (dialog)
+        # Setting Background image
         spam = bgImg
-        # self.setStyleSheet("background-image: url({});".format(spam) )
         self.mainFrame.setStyleSheet("background-image: url({});".format(spam) )
-        # self.trainButton.setStyleSheet("background-color: #b2beb5; color:#b2beb5;" )
-        # oImage = QImage(bgImg)
-        # sImage = oImage.scaled(QSize(self.width(),self.height()))
-        # palette = QPalette()
-        # palette.setBrush(10, QBrush(sImage))
-        # self.setPalette(palette)
-
         self.quitButton.setStyleSheet("color:#ff0000;")
 
     def changeStatus(self, status):
@@ -73,7 +54,6 @@ class MainWindow(QMainWindow):
 
     def screenFullNormal(self):
         status = self.fullScreenButton.text()
-        # print(status)
         if status == 'Full Screen':
             self.showFullScreen()
             self.fullScreenButton.setText('Normal Size')
@@ -115,7 +95,7 @@ class MainWindow(QMainWindow):
     def displayFeed(self, fram, window=1):
         """  Method to display feed on viewfield """
         qformat = QImage.Format_Indexed8
-        f = cv2.FONT_HERSHEY_TRIPLEX #FONT_HERSHEY_SIMPLEX
+        f = cv2.FONT_HERSHEY_TRIPLEX
         try:
             ''' recent version of opencv return '''
             if (len(fram.shape)) == 3:  # [0] : rows, [1] = cols, [2]: channels
@@ -125,10 +105,10 @@ class MainWindow(QMainWindow):
                     qformat = QImage.Format_RGB888
         except:
             text1 = "Error!!!"
-            text2 = "{}".format(self.camId)
+            text2 = "Unable to access camera with address: {}".format(VIDEO_SOURCE)
             img = cv2.imread(errorImg, 1)
-            img = cv2.putText(img, text1, (0, 70), f, 2, (255, 255, 255))
-            fram = cv2.putText(img, text2, (0, 130), f, 2, (255, 255, 255))
+            img = cv2.putText(img, text1, (0, 70), f, 2, (0, 0, 255)) # BGR
+            fram = cv2.putText(img, text2, (0, 130), f, 2, (0, 0, 255) ) # BGR
         try:
             frameI = QImage(fram, fram.shape[1], fram.shape[0], fram.strides[0], qformat)
             # Converting BGR (openCv) to RGB (Qt)
@@ -137,35 +117,10 @@ class MainWindow(QMainWindow):
                 self.mainFrame.setPixmap(QPixmap.fromImage(frameI))
                 self.mainFrame.setScaledContents(True)
             else:
-                # on second window TODO: Scaled the second image to fit te window perfectly
-                #frameI = frameI.setPixel(25,150)
-                #print(dir(frameI))
-                #print(dir(frameI.setPixel))
-                #print(frameI.size())
-                # frameI = frameI.scaled(QSize(50,30))
                 self.responseFrame.setPixmap(QPixmap.fromImage(frameI))
                 self.responseFrame.setScaledContents(True)
         except AttributeError:
             print('No more frames')
-
-    def settings(self):
-        pass
-
-    def train(self):
-        if not self.training_now:
-            self.trainButton.setText(TRAINING_NOW)
-            self.changeStatus(TRAINING_NOW)
-            from helpers import face_track_gui
-            dialog = face_track_gui.FaceTrack(self)
-            self.dialogs.append(dialog)
-            dialog.show()
-            # self.trainButton.setEnabled(False)
-            self.training_now = True
-            print(dir(self.dialogs))
-        else:
-            self.trainButton.setText('Train')
-            self.training_now = False
-            self.changeStatus(APP_READY)
 
     def help(self):
         dialog = help.HelpDialog(self)
@@ -180,7 +135,7 @@ class MainWindow(QMainWindow):
             try:
                 self.feed.stop()
             except Exception as e:
-                # print(e)
+                print( str(e) )
                 pass
         finally:
             for win in self.dialogs:
@@ -191,14 +146,11 @@ class MainWindow(QMainWindow):
                     pass
             self.close()
 
-
 def boot():
     app = QApplication([])
     main = MainWindow(None)
     main.setToolTip("Face Tracking and Attendance System")
-    #main.setStatusTip("Face System")
     main.setWindowIcon(QIcon(iconImg))
-    #print(dir(main))
     main.show()
     sys.exit(app.exec_())
 

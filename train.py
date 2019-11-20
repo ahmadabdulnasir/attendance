@@ -12,14 +12,12 @@ import numpy as np
 import os
 import pickle
 
-
 names = list()
 enc = list()
 d = os.listdir()
 people = {}
 for name in d:
     if os.path.isdir(name):
-        #print(os.listdir(name))
         print('[INFO] Found directory: {}'.format(name))
         fs = os.listdir(name)
         people[name] = fs
@@ -41,8 +39,10 @@ def encodeUser(name):
             print('[ERROR] : {}'.format(str(e) ))
 
 
- #
 def boot():
+    '''
+    This is a kick start function to start training
+    '''
     for name in people.keys():
         encodeUser(name)
     print('[INFO] Work Done ' + '*'*10+'\n Writing Data to Disk ....')

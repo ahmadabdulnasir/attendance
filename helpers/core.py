@@ -6,19 +6,17 @@ __homepage__ = https://ahmadabdulnasir.com.ng
 __copyright__ = 'Copyright (c) 2019, salafi'
 __version__ = "0.01t"
 """
-
 import cv2
 import os
 from datetime import  datetime as dtime
 from threading import Thread
-#from . import face_track
 import pickle
 import face_recognition
 import numpy as np
 '''constants declaration '''
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Setting database file to use
-faceCascade_file = os.path.join(BASE_DIR, "haarcascade_profileface.xml")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # Base directory were the current file is
+# Setting haarcascade file to use
+faceCascade_file = os.path.join(BASE_DIR, "haarcascade_frontalface_default.xml")
 ''' ./constants declaration'''
 
 # 'haarcascade_frontalface_default'
@@ -29,48 +27,12 @@ faceCascade_file = os.path.join(BASE_DIR, "haarcascade_profileface.xml")
 # Create the haar cascade
 faceCascade = cv2.CascadeClassifier(faceCascade_file)
 
-PEOPLE = ['Abdussamad', 'asmau', 'muhammad', 'salisu', 'timoti', 'abubakar', 'ishaq', 'sadiq', 'Sani', 'Usman',]
 # load the known faces and embeddings
 print("[INFO] loading faces encodings model...")
 data = pickle.loads(open("faces.model", "rb").read())
 print("[INFO] loading faces encodings model Done")
-# x = threading.Thread(target=thread_function, args=(1,), daemon=True)
-class PredictionThread(Thread):
-
-    def __init__(self):
-        Thread.__init__(self)
-        self.daemon = True
-        self.images = list()
-        self.img = None
-        self.working = True
-        # self.reg_pipe = face_track.preditFace
-
-    def run(self):
-        print('[INFO]: Starting Prediction Thread')
-        while True:
-        #TODO: Make the actual prediction here
-            #result = face_track.preditFace(self.img)
-            #{'userid':userid, 'x_min': x_min, 'x_max': x_max, 'y_min': y_min, 'y_max': y_max , 'confidence': msg}
-            result = None
-            if result:
-                rows = []
-                tstp = str(dtime.now().strftime('%d-%b-%H-%Y-%M-%S%p'))
-                username = result['userid']
-                present = 'Yes'
-                date_ = str(dtime.now().strftime('%d_%b_%Y'))
-                row = [tstp, username, present, date_]
-                print('adding ', row)
-                rows.append(row)
-                saveRecord(rows)
-            print(result)
-
-    def update(self, img):
-        self.img = img
-        if not self.working:
-            self.run()
 
 def locaPredict(img):
-    # print('[INFO]: Starting Prediction Thread')
     spam = face_recognition.load_image_file(img)
     boxes = face_recognition.face_locations(spam, model='hog')
     encodings = face_recognition.face_encodings(spam, boxes)
@@ -86,7 +48,6 @@ def locaPredict(img):
 			# was matched
             matchedIdxs = [i for (i, b) in enumerate(matches) if b]
             counts = {}
-
 			# loop over the matched indexes and maintain a count for
 			# each recognized face face
             for i in matchedIdxs:
@@ -100,7 +61,6 @@ def locaPredict(img):
 		# update the list of names
 		# names.append(name)
     result = name
-    #{'userid':userid, 'x_min': x_min, 'x_max': x_max, 'y_min': y_min, 'y_max': y_max , 'confidence': msg}
     if result:
         rows = []
         tstp = str(dtime.now().strftime('%d-%b-%H-%Y-%M-%S%p'))
@@ -117,9 +77,8 @@ def draw_box(frame):
     # Our operations on the frame come here
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     today_dir = 'output/'+'{}/'.format(str(dtime.now().strftime('%d_%b_%Y')))
-    #output = os.path.join(BASE_DIR, 'output')
-    output = 'output'
     frames_dir = today_dir+ 'frames/'
+    output = 'output'
     if not os.path.isdir(output):
         os.mkdir(output)
     if not os.path.isdir(today_dir):
@@ -138,17 +97,11 @@ def draw_box(frame):
     exT = 30
     for (x, y, w, h) in faces:
         x = x - exT
-        # y = y - exT
-        # w = w + exT
         h = h + exT
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-        imgcrop = frame[y:y+h, x:x+w]
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 255), 2) # BGR
         out_file = today_dir+ str(dtime.now().strftime('%d-%b-%H-%M-%s')) +'.png'
-        # cv2.imwrite(out_file, imgcrop)
         frame_file = frames_dir +str(dtime.now().strftime('%d-%b-%H-%M-%s')) +'.jpg'
         cv2.imwrite(frame_file, frame)
-        # t = PredictionThread().update(out_file)
-        # t.run()
         locaPredict(frame_file)
 
     return gray
@@ -170,34 +123,23 @@ def saveRecord(rows):
             c.writerow(r)
     print('*'*20 + ' Done ' + '*'*20)
 
-def tempFunc():
-    rows = []
-    for ti in range(100):
-        tstp = str(dtime.now().strftime('%d-%b-%H-%Y-%M-%S%p'))
-        username= 'userid' + str(ti)
-        present = 'Yes'
-        date_ = str(dtime.now().strftime('%d_%b_%Y'))
-        row = [tstp, username, present, date_]
-        print('adding ', row)
-        rows.append(row)
-    saveRecord(rows)
-
 def boot():
+    '''
+    This is a kick start function for testing the core module
+    without the gui
+    '''
     cap = cv2.VideoCapture(0)
     while(True):
     	# Capture frame-by-frame
     	ret, frame = cap.read()
-
     	img = draw_box(frame)
     	# Display the resulting frame
     	cv2.imshow('frame', img)
     	if cv2.waitKey(1) & 0xFF == ord('q'):
     		break
-
     # When everything done, release the capture
     cap.release()
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     boot()
-    # tempFunc()
