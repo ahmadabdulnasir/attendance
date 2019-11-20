@@ -63,7 +63,7 @@ def locaPredict(img):
     result = name
     if result:
         rows = []
-        tstp = str(dtime.now().strftime('%d-%b-%H-%Y-%M-%S%p'))
+        tstp = str(dtime.now() )
         username = result #['userid']
         present = 'Yes'
         date_ = str(dtime.now().strftime('%d_%b_%Y'))
@@ -99,11 +99,9 @@ def draw_box(frame):
         x = x - exT
         h = h + exT
         cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 255), 2) # BGR
-        out_file = today_dir+ str(dtime.now().strftime('%d-%b-%H-%M-%s')) +'.png'
-        frame_file = frames_dir +str(dtime.now().strftime('%d-%b-%H-%M-%s')) +'.jpg'
+        frame_file = frames_dir +str(dtime.now().strftime('%d-%b-%H-%M-%s')) +'.png'
         cv2.imwrite(frame_file, frame)
         locaPredict(frame_file)
-
     return gray
 
 header = ['Time Stamp', 'Username', 'Present', 'Date']
